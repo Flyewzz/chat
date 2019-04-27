@@ -40,14 +40,14 @@ ws.onmessage = function(event) {
   if (Array.isArray(data)) {
     data.forEach(message => {
         console.log(message);
-        $('#messages').prepend(
+        $('#messages').append(
             `<div>Author: <h4>${message.author_name}</h4><h5>${message.date}</h5><br>${message.text}<br>`
         );
     });
     return;
   }
     
-    $('#messages').prepend(
+    $('#messages').append(
         `<div>Author: <h4>${data.author_name}</h4><h5>${data.date}</h5><br>${data.text}<br>`
     );
 };

@@ -83,7 +83,7 @@ func UpdateChat(ws *websocket.Conn) {
 		fmt.Println("Database error", err)
 	}
 	defer db.Close()
-	msgs, err := db.Query("SELECT * FROM Messages ORDER BY date DESC")
+	msgs, err := db.Query("SELECT * FROM Messages ORDER BY date")
 	if err != nil {
 		panic(err)
 	}
