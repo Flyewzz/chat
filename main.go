@@ -22,9 +22,11 @@ var upgrader = websocket.Upgrader{
 var clients []*websocket.Conn
 
 type message struct {
-	id_message  int
-	author_name string
-	text        string
+	Id_message  int    `json:"id_message"`
+	Author_name string `json:"author_name"`
+	Text        string `json:"text"`
+	Date        string `json:"date"`
+	Is_deleted  bool   `json:"is_deleted"`
 }
 
 func SocketFunc(w http.ResponseWriter, r *http.Request) {
@@ -34,31 +36,8 @@ func SocketFunc(w http.ResponseWriter, r *http.Request) {
 	}
 	// defer ws.Close()
 	clients = append(clients, ws)
-	// db, err := sql.Open("mysql", "chat:123456@tcp(192.168.43.245:3306)/chat")
-	// if err != nil {
-	// 	fmt.Println("Database error", err)
-	// }
-	// defer db.Close()
-	// msgs, err := db.Query("SELECT * FROM Messages")
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer msgs.Close()
-	// messages := []message{}
-
-	// for msgs.Next() {
-	// 	msg := message{}
-	// 	err := msgs.Scan(&msg.id_message, &msg.author_name, &msg.text)
-	// 	if err != nil {
-	// 		fmt.Println("Error reading from db!", err)
-	// 		continue
-	// 	}
-	// 	messages = append(messages, msg)
-	// }
-	// for _, message := range messages {
-	// 	fmt.Printf("id: %d, author: %s, text: %s\n", message.id_message, message.author_name, message.text)
-	// }
-	fmt.Println("Ws:", ws)
+	// fmt.Println("Ws:", ws)
+	UpdateChat(ws) // Update chat for socket
 	go ReadSocket(ws)
 
 }
@@ -67,31 +46,21 @@ func ReadSocket(ws *websocket.Conn) {
 	fmt.Println("State of clients:")
 	fmt.Println(len(clients))
 	for {
-		type message struct {
-			Text   string `json:"text"`
-			Author string `json:"author"`
-		}
 		var msg message
 		err := websocket.ReadJSON(ws, &msg)
 		if err != nil {
-			// _, _, err := ws.ReadMessage()
-			// if err != nil {
-			fmt.Println("Disconnect")
-			CloseAndRemove(ws)
-			// ws.Close()
-
-			// }
 			fmt.Println("Client was disconnected")
+			CloseAndRemove(ws)
 			break
 		}
 		fmt.Println("Message: ", msg.Text)
-		fmt.Println("Author: ", msg.Author)
+		fmt.Println("Author: ", msg.Author_name)
 		db, err := sql.Open("mysql", "chat:123456@tcp(192.168.43.245:3306)/chat")
 		if err != nil {
 			fmt.Println("Database error", err)
 		}
 		defer db.Close()
-		insert, err := db.Query("INSERT INTO Messages (author_name, text) VALUES (?, ?)", msg.Author, msg.Text)
+		insert, err := db.Query("INSERT INTO Messages (author_name, text) VALUES (?, ?)", msg.Author_name, msg.Text)
 		if err != nil {
 			fmt.Println("Database insert error", err)
 			break
@@ -108,6 +77,38 @@ func ReadSocket(ws *websocket.Conn) {
 	}
 }
 
+func UpdateChat(ws *websocket.Conn) {
+	db, err := sql.Open("mysql", "chat:123456@tcp(192.168.43.245:3306)/chat")
+	if err != nil {
+		fmt.Println("Database error", err)
+	}
+	defer db.Close()
+	msgs, err := db.Query("SELECT * FROM Messages ORDER BY date DESC")
+	if err != nil {
+		panic(err)
+	}
+	defer msgs.Close()
+	messages := []message{}
+
+	for msgs.Next() {
+		msg := message{}
+		err := msgs.Scan(&msg.Id_message, &msg.Author_name, &msg.Text, &msg.Date, &msg.Is_deleted)
+		if err != nil {
+			fmt.Println("Error reading from database!", err)
+			continue
+		}
+		messages = append(messages, msg)
+
+	}
+	for _, msg := range messages {
+		fmt.Printf("id: %d, author: %s, text: %s, date: %s\n", msg.Id_message, msg.Author_name, msg.Text, msg.Date)
+	}
+
+	if err := ws.WriteJSON(messages); err != nil {
+		fmt.Println("Error JSON array encoding", err)
+	}
+
+}
 func CloseAndRemove(ws *websocket.Conn) {
 	index := -1
 	defer ws.Close()

@@ -36,9 +36,19 @@ ws.onclose = function(event) {
 };
 
 ws.onmessage = function(event) {
-    const message = JSON.parse(event.data);
+  const data = JSON.parse(event.data);
+  if (Array.isArray(data)) {
+    data.forEach(message => {
+        console.log(message);
+        $('#messages').prepend(
+            `<div>Author: <h4>${message.author_name}</h4><h5>${message.date}</h5><br>${message.text}<br>`
+        );
+    });
+    return;
+  }
+    
     $('#messages').prepend(
-        `<div>Author: <h4>${message.author}</h4><br>${message.text}<br>`
+        `<div>Author: <h4>${data.author_name}</h4><h5>${data.date}</h5><br>${data.text}<br>`
     );
 };
 
