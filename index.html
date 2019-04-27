@@ -17,9 +17,12 @@
 <body>
     <h2>Chat</h2>
     <div id="messages"></div>
-    <input type="text" name="msg" id="msg"><button id="send">Send</button><br>
+    <caption>Your nickname: </caption><input type="text" name="author" id="author"> <br>
+    <caption>Your message: </caption><input type="text" name="msg" id="msg"> <br>
+    <button id="send">Send</button><br>
+    <button id='disconnect'>disc</button>
     <script>
-        var ws = new WebSocket("ws://127.0.0.1:8080/socket")
+        var ws = new WebSocket("ws://192.168.43.4:8080/socket")
         ws.onopen = function() {
   alert("Соединение установлено.");
 };
@@ -42,10 +45,15 @@ ws.onmessage = function(event) {
 ws.onerror = function(error) {
   alert("Ошибка " + error.message);
 };
+
+$("#disconnect").click(() => {
+  ws.close();
+})
+
 $(document).ready(() => {
     $('#send').click(() => {
         ws.send(JSON.stringify({
-            author: "auth",
+            author: $('#author').val(),
             text: $('#msg').val(),
         }));
         // $('#messages').prepend(
