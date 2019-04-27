@@ -12,12 +12,14 @@
     border-style: solid;
     }
     </style>
-    <script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+    <!-- <script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script> -->
 </head>
 <body>
     <h2>Chat</h2>
     <div id="messages"></div>
-    <input type="text" name="msg" id="msg"><button id="send">Send</button><br>
+    <input type="text" name="msg" id="msg">
+    <button id="send">Send</button>
+    <br>
     <script>
         var ws = new WebSocket("ws://127.0.0.1:8080/socket")
         ws.onopen = function() {
@@ -34,25 +36,29 @@ ws.onclose = function(event) {
 
 ws.onmessage = function(event) {
     const message = JSON.parse(event.data);
-    $('#messages').prepend(
-        `<div>Author: <h4>${message.author}</h4><br>${message.text}<br>`
-    );
+    const massageDiv = document.createElement('div');
+    massageDiv.innerHTML = 'Author: <h4>' + message.author + '</h4><br>' + message.text + '<br>';
+
+    document.getElementById('messages').appendChild(massageDiv);
 };
 
 ws.onerror = function(error) {
   alert("Ошибка " + error.message);
 };
-$(document).ready(() => {
-    $('#send').click(() => {
-        ws.send(JSON.stringify({
-            author: "auth",
-            text: $('#msg').val(),
-        }));
-        // $('#messages').prepend(
-        //     `<div>Author: <h4>You</h4><br>${$('#msg').val()}<br>`
-        // );
-    });
+
+document.addEventListener('DOMContentLoaded', function() {
+  alert("SEND Load!!!");
+  
 });
+
+const ButtnSend = document.getElementById('send');
+ButtnSend.addEventListener('click', function() {
+  ws.send(JSON.stringify({
+      author: "auth",
+      text: document.getElementById('msg').value,
+  }));
+});
+
     </script>
 
 </body>
