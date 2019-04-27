@@ -43,7 +43,7 @@ func SocketFunc(w http.ResponseWriter, r *http.Request) {
 }
 
 func ReadSocket(ws *websocket.Conn) {
-	fmt.Println("State of clients:")
+	fmt.Println("Count of clients:")
 	fmt.Println(len(clients))
 	for {
 		var msg message
@@ -67,7 +67,7 @@ func ReadSocket(ws *websocket.Conn) {
 		}
 		insert.Close() // Correct closing
 		for _, client := range clients {
-			if err := websocket.WriteJSON(client, msg); err != nil {
+			if err := client.WriteJSON(msg); err != nil {
 				fmt.Println("Disconnect")
 				break
 			}

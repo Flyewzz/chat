@@ -24,7 +24,7 @@
     <script>
         var ws = new WebSocket("ws://192.168.43.4:8080/socket")
         ws.onopen = function() {
-  alert("Соединение установлено.");
+  console.log("Соединение установлено.");
 };
 
 ws.onclose = function(event) {
@@ -41,14 +41,13 @@ ws.onmessage = function(event) {
     data.forEach(message => {
         console.log(message);
         $('#messages').append(
-            `<div>Author: <h4>${message.author_name}</h4><h5>${message.date}</h5><br>${message.text}<br>`
+            `<div>Author: <h4>${message.author_name}</h4><br><h5>${message.date}</h5><br>${message.text}<br></div>`
         );
     });
     return;
   }
-    
     $('#messages').append(
-        `<div>Author: <h4>${data.author_name}</h4><h5>${data.date}</h5><br>${data.text}<br>`
+        `<div>Author: <h4>${data.author_name}</h4><br><h5>${data.date}</h5><br>${data.text}<br></div>`
     );
 };
 
@@ -63,7 +62,7 @@ $("#disconnect").click(() => {
 $(document).ready(() => {
     $('#send').click(() => {
         ws.send(JSON.stringify({
-            author: $('#author').val(),
+            author_name: $('#author').val(),
             text: $('#msg').val(),
         }));
         // $('#messages').prepend(
